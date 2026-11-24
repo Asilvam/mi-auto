@@ -5,6 +5,7 @@ import { useAuth } from './auth'
 import RouteMap from './RouteMap'
 import { monthMetrics, weekDistance } from './trip-metrics'
 import { isWaitingForWorkspace, needsWorkspaceRetry } from './app-startup'
+import PlaceSearch, { type PlaceSuggestion } from './PlaceSearch'
 
 type Trip = { id: string; title: string; date: string; dateISO: string; mode: 'Viaje compartido' | 'Delivery'; status: 'planned' | 'in_progress' | 'completed'; km: number; amount: number; fuel: number; tolls: number; deliveryFee: number; perPerson: number; places: number; start: string; end: string; stops: string[]; }
 type DeliveryRate = { id: string; label: string; startTime: string; endTime: string; amountClp: number }
@@ -20,8 +21,10 @@ function App() {
   const [trips, setTrips] = useState<Trip[]>([])
   const [modal, setModal] = useState(false)
   const [toast, setToast] = useState('')
-  const [start, setStart] = useState('Plaza de Quintero')
-  const [end, setEnd] = useState('Loncura')
+  const [start, setStart] = useState('')
+  const [end, setEnd] = useState('')
+  const [originPlace, setOriginPlace] = useState<PlaceSuggestion | null>(null)
+  const [destinationPlace, setDestinationPlace] = useState<PlaceSuggestion | null>(null)
   const [km, setKm] = useState('')
   const [passengers, setPassengers] = useState('3')
   const [mode, setMode] = useState<'Viaje compartido' | 'Delivery'>('Viaje compartido')
@@ -78,10 +81,10 @@ function App() {
   const notify = (text: string) => { setToast(text); window.setTimeout(() => setToast(''), 2800) }
   const planRoute = async () => {
     if (!vehicleConfigured) { notify('Primero configura tu vehículo'); setShowSettings(true); return }
-    if (!start.trim() || !end.trim()) { notify('Ingresa origen y destino'); return }
+    if (!originPlace || !destinationPlace) { notify('Selecciona un origen y un destino de las sugerencias'); return }
     setPlanning(true)
     try {
-      const result = await auth.apiFetch<RoutePlan>('routes/plan', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ origin: start, destination: end, stops, type: mode === 'Delivery' ? 'delivery' : 'shared', tollsClp: tolls, participantCount: Number(passengers) || 1 }) })
+      const result = await auth.apiFetch<RoutePlan>('routes/plan', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ origin: originPlace.fullAddress, destination: destinationPlace.fullAddress, stops, type: mode === 'Delivery' ? 'delivery' : 'shared', tollsClp: tolls, participantCount: Number(passengers) || 1 }) })
       if (mode === 'Delivery') {
         const pricing = await auth.apiFetch<{ currentRule: DeliveryRate | null }>('pricing/delivery')
         setCurrentDeliveryRate(pricing.currentRule)
@@ -121,13 +124,13 @@ function App() {
   }
   const createTrip = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!start.trim() || !end.trim()) return
+    if (!originPlace || !destinationPlace) { notify('Selecciona origen y destino desde las sugerencias'); return }
     if (!vehicleConfigured) { notify('Primero configura tu vehículo'); setShowSettings(true); return }
     try {
       if (!selectedRoute) { notify('Calcula la ruta con Mapbox antes de guardarla'); return }
       const pricing = mode === 'Delivery' ? await auth.apiFetch<{ currentRule: DeliveryRate | null }>('pricing/delivery') : null
       if (pricing) setCurrentDeliveryRate(pricing.currentRule)
-      const saved = await auth.apiFetch<any>('trips', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: mode === 'Delivery' ? 'delivery' : 'shared', status: mode === 'Delivery' ? 'in_progress' : 'completed', origin: start, destination: end, stops: selectedRoute.stopOrder.slice(1, -1), distanceMeters: selectedRoute.distanceMeters, durationSeconds: selectedRoute.durationSeconds, tollsClp: tolls, participantCount: Number(passengers), deliveryFeeClp: pricing?.currentRule?.amountClp ?? 0, routeGeometry: selectedRoute.geometry }) })
+      const saved = await auth.apiFetch<any>('trips', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: mode === 'Delivery' ? 'delivery' : 'shared', status: mode === 'Delivery' ? 'in_progress' : 'completed', origin: originPlace.fullAddress, destination: destinationPlace.fullAddress, stops: selectedRoute.stopOrder.slice(1, -1), distanceMeters: selectedRoute.distanceMeters, durationSeconds: selectedRoute.durationSeconds, tollsClp: tolls, participantCount: Number(passengers), deliveryFeeClp: pricing?.currentRule?.amountClp ?? 0, routeGeometry: selectedRoute.geometry }) })
       const completedAt = saved.completedAt ?? new Date().toISOString()
       const entry: Trip = { id: saved._id, title: `${saved.origin} → ${saved.destination}`, date: new Date(completedAt).toLocaleString('es-CL'), dateISO: saved.startedAt ?? completedAt, mode, status: saved.status, km: saved.distanceMeters / 1000, amount: saved.totalCostClp, fuel: saved.fuelCostClp, tolls: saved.tollsClp, deliveryFee: saved.deliveryFeeClp, perPerson: saved.costPerParticipantClp, places: saved.participantCount, start: saved.origin, end: saved.destination, stops: saved.stops ?? [] }
       setTrips([entry, ...trips]); setModal(false); setTab('Historial'); notify('Ruta guardada en tu historial')
@@ -173,7 +176,7 @@ function App() {
 
         <div className="section-heading"><div><h2>Tu próxima ruta</h2><p>Compara alternativas según distancia y gasto estimado.</p></div><button className="text-btn" onClick={() => notify('La optimización avanzada estará disponible al conectar mapas')}>Ver mapa completo <ArrowRight size={15}/></button></div>
         <div className="route-card">
-          <div className="route-left"><div className="route-search"><div className="route-points"><div className="point-dot start-dot"/><div className="point-stem"/><div className="point-dot end-dot"/></div><div className="fields"><label><small>DESDE</small><input value={start} onChange={e => { setStart(e.target.value); setRoutePlan(null) }}/></label><div className="field-divider"/><label><small>HASTA</small><input value={end} onChange={e => { setEnd(e.target.value); setRoutePlan(null) }}/></label></div><button className="swap-btn" onClick={() => { setStart(end); setEnd(start); setRoutePlan(null) }} title="Invertir origen y destino"><ArrowDownRight size={16}/></button></div>
+          <div className="route-left"><div className="route-search"><div className="route-points"><div className="point-dot start-dot"/><div className="point-stem"/><div className="point-dot end-dot"/></div><div className="fields"><PlaceSearch id="route-origin" label="ORIGEN" value={start} selectedPlace={originPlace} placeholder="Busca dónde comienza el viaje" onChange={value => { setStart(value); setRoutePlan(null) }} onSelect={place => setOriginPlace(place)}/><div className="field-divider"/><PlaceSearch id="route-destination" label="DESTINO" value={end} selectedPlace={destinationPlace} placeholder="Busca dónde termina el viaje" onChange={value => { setEnd(value); setRoutePlan(null) }} onSelect={place => setDestinationPlace(place)}/></div><button className="swap-btn" onClick={() => { setStart(end); setEnd(start); setOriginPlace(destinationPlace); setDestinationPlace(originPlace); setRoutePlan(null) }} title="Invertir origen y destino"><ArrowDownRight size={16}/></button></div>
             <div className="stop-editor"><div className="stop-list">{stops.map((stop, index) => <span key={`${stop}-${index}`} className="stop-chip">Parada {index + 1}: {stop}<button type="button" aria-label={`Quitar ${stop}`} onClick={() => { setStops(stops.filter((_, i) => i !== index)); setRoutePlan(null) }}><X size={13}/></button></span>)}</div><div className="stop-add"><input value={newStop} onChange={e => setNewStop(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addStop() } }} placeholder="Agregar parada de delivery"/><button type="button" className="icon-btn" onClick={addStop} aria-label="Agregar parada"><Plus size={16}/></button></div></div>
             <div className="route-fields"><label>Tipo de recorrido<select value={mode} onChange={e => { setMode(e.target.value as typeof mode); setRoutePlan(null) }}><option>Viaje compartido</option><option>Delivery</option></select></label><label>Peajes estimados<input type="number" min="0" step="100" value={tolls} onChange={e => { setTolls(Number(e.target.value)); setRoutePlan(null) }}/></label>{mode === 'Viaje compartido' && <label>Personas que dividen el gasto<input type="number" min="1" max="50" value={passengers} onChange={e => setPassengers(e.target.value)}/></label>}</div>
             <div className="route-options"><button className={routeChoice === 'Económica' ? 'selected' : ''} onClick={() => setRouteChoice('Económica')}><Wallet size={15}/><span><b>Económica</b><small>{selectedRoute && routePlan ? `${money(selectedRoute.totalCostClp)} estimado` : 'Menor costo de combustible'}</small></span><i/></button><button className={routeChoice === 'Más rápida' ? 'selected' : ''} onClick={() => setRouteChoice('Más rápida')}><Clock3 size={15}/><span><b>Más rápida</b><small>{selectedRoute && routePlan ? `${Math.round(selectedRoute.durationSeconds / 60)} min estimados` : 'Menor tiempo de viaje'}</small></span><i/></button></div>

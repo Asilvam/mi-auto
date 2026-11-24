@@ -33,6 +33,7 @@ El frontend conserva el JWT de acceso solo en memoria. La cookie de refresh es H
 - Resumen e historial alimentados por la API, sin rutas demostrativas.
 - Configuración de vehículo en km/L, L/100 km y CLP por litro.
 - Comparación de alternativas por costo de combustible y por duración; peajes se ingresan manualmente.
+- Selección de origen y destino desde sugerencias de direcciones de Mapbox en Quintero.
 - Planificación de deliveries con varias paradas y reordenamiento de las paradas por tiempo.
 - Delivery activo con opción de añadir paradas, recalcular y finalizar.
 - Tarifas configurables por horario, con tramos iniciales gratuitos, $500 y $1.000 CLP.

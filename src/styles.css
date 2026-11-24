@@ -198,6 +198,27 @@ body{background:#f7faf5;color:#29463d}
 /* Mapbox route planning, active deliveries and editable fare bands */
 .route-card{grid-template-columns:minmax(330px,.9fr) minmax(360px,1.1fr);align-items:stretch}
 .route-left{gap:13px;padding:17px}
+.fields{min-width:0;width:100%}
+.place-field{position:relative;display:block;min-width:0}
+.place-field>label{display:block}
+.place-field>label small{display:block;color:#71877a;font-size:9px;font-weight:700;letter-spacing:.55px;margin-bottom:3px}
+.place-input-wrap{position:relative;display:flex;align-items:center}
+.place-input-wrap input{height:26px;padding-right:22px!important;text-overflow:ellipsis}
+.place-input-wrap input::placeholder{color:#a6b0a7;font-weight:400}
+.place-search-icon{position:absolute;right:4px;color:#8d9d8f;pointer-events:none}
+.place-search-icon.selected{color:#4c8b62}
+.place-search-icon.spinning{animation:place-spin .8s linear infinite}
+@keyframes place-spin{to{transform:rotate(360deg)}}
+.place-selection-note{display:block;margin-top:2px;color:#4c8b62;font-size:8px}
+.place-suggestions{position:absolute;top:calc(100% + 5px);left:-8px;right:-8px;z-index:20;max-height:220px;overflow-y:auto;padding:4px;border:1px solid #dfe9de;border-radius:9px;background:#fffefb;box-shadow:0 12px 28px #283e2c24}
+.place-suggestion{width:100%;display:flex;align-items:flex-start;gap:8px;padding:9px 8px;border:0;border-radius:6px;background:transparent;text-align:left;color:#4f795d}
+.place-suggestion:hover,.place-suggestion:focus-visible{background:#eef6ec;outline:none}
+.place-suggestion svg{flex:none;margin-top:2px}
+.place-suggestion span{min-width:0;display:grid;gap:3px}
+.place-suggestion b{font-size:10px;font-weight:700}
+.place-suggestion small{font-size:9px!important;line-height:1.4;color:#849486!important;font-weight:400!important;letter-spacing:0!important}
+.place-suggestion-message{padding:10px;color:#849486;font-size:9px;line-height:1.5}
+.place-suggestion-error{color:#a94e43}
 .stop-editor{display:grid;gap:8px}
 .stop-list{display:flex;flex-wrap:wrap;gap:6px}
 .stop-chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;background:#edf7ed;color:#52785b;padding:5px 8px;font-size:10px}
