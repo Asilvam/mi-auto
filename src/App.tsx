@@ -4,6 +4,7 @@ import LoginScreen from './LoginScreen'
 import { useAuth } from './auth'
 import RouteMap from './RouteMap'
 import { monthMetrics, weekDistance } from './trip-metrics'
+import { isWaitingForWorkspace, needsWorkspaceRetry } from './app-startup'
 
 type Trip = { id: string; title: string; date: string; dateISO: string; mode: 'Viaje compartido' | 'Delivery'; status: 'planned' | 'in_progress' | 'completed'; km: number; amount: number; fuel: number; tolls: number; deliveryFee: number; perPerson: number; places: number; start: string; end: string; stops: string[]; }
 type DeliveryRate = { id: string; label: string; startTime: string; endTime: string; amountClp: number }
@@ -14,6 +15,7 @@ const money = (n: number) => '$' + Math.round(n).toLocaleString('es-CL')
 function App() {
   const auth = useAuth()
   const [dataReady, setDataReady] = useState(false)
+  const [startupTimedOut, setStartupTimedOut] = useState(false)
   const [tab, setTab] = useState('Resumen')
   const [trips, setTrips] = useState<Trip[]>([])
   const [modal, setModal] = useState(false)
@@ -40,6 +42,12 @@ function App() {
   const [query, setQuery] = useState('')
   const [vehicleConfigured, setVehicleConfigured] = useState(false)
   const [savingVehicle, setSavingVehicle] = useState(false)
+  useEffect(() => {
+    const waiting = auth.loading || Boolean(auth.user && !dataReady)
+    if (!waiting) { setStartupTimedOut(false); return }
+    const timeout = window.setTimeout(() => setStartupTimedOut(true), 8000)
+    return () => window.clearTimeout(timeout)
+  }, [auth.loading, auth.user?.id, dataReady])
   useEffect(() => {
     if (!auth.user) { setDataReady(false); return }
     let active = true
@@ -136,7 +144,8 @@ function App() {
 
   const addStop = () => { const value = newStop.trim(); if (value) { setStops([...stops, value]); setNewStop(''); setRoutePlan(null) } }
 
-  if (auth.loading || (auth.user && !dataReady)) return <div className="auth-loading">Preparando tu espacio de Mi Auto…</div>
+  if (isWaitingForWorkspace(auth.loading, Boolean(auth.user), dataReady, startupTimedOut)) return <div className="auth-loading">Preparando tu espacio de Mi Auto…</div>
+  if (needsWorkspaceRetry(auth.loading, Boolean(auth.user), dataReady, startupTimedOut)) return <main className="startup-error" role="alert"><div><h1>No pudimos conectar con Mi Auto</h1><p>El servidor tardó demasiado en responder. Comprueba que el backend esté iniciado y vuelve a intentar.</p><button className="primary-btn" onClick={() => window.location.reload()}>Reintentar</button></div></main>
   if (!auth.user) return <LoginScreen />
 
   return <div className="app-shell">
