@@ -10,6 +10,11 @@ type AuthContextValue = {
 }
 
 const API = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000'
+const REQUEST_TIMEOUT_MS = 12_000
+const apiRequest = (url: string, init: RequestInit = {}) => fetch(url, {
+  ...init,
+  signal: init.signal ?? AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+})
 const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -20,7 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   const getCsrf = useCallback(async () => {
-    const response = await fetch(`${API}/api/auth/csrf`, { credentials: 'include' })
+    const response = await apiRequest(`${API}/api/auth/csrf`, { credentials: 'include' })
     if (!response.ok) throw new Error('No se pudo preparar la sesión segura.')
     const data = await response.json() as { csrfToken: string }
     csrfToken.current = data.csrfToken
@@ -31,7 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (renewal.current) return renewal.current
     const work = (async () => {
       const csrf = csrfToken.current ?? await getCsrf()
-      const response = await fetch(`${API}/api/auth/refresh`, {
+      const response = await apiRequest(`${API}/api/auth/refresh`, {
         method: 'POST', credentials: 'include', headers: { 'X-CSRF-Token': csrf },
       })
       if (!response.ok) throw new Error('Sesión vencida.')
@@ -47,12 +52,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let active = true
-    void renew().catch(() => { if (active) { accessToken.current = null; setUser(null) } }).finally(() => { if (active) setLoading(false) })
-    return () => { active = false }
+    const timeout = window.setTimeout(() => {
+      if (active) {
+        accessToken.current = null
+        setUser(null)
+        setLoading(false)
+      }
+    }, REQUEST_TIMEOUT_MS)
+    void renew().catch(() => { if (active) { accessToken.current = null; setUser(null) } }).finally(() => {
+      window.clearTimeout(timeout)
+      if (active) setLoading(false)
+    })
+    return () => { active = false; window.clearTimeout(timeout) }
   }, [renew])
 
   const signInWithGoogle = useCallback(async (credential: string) => {
-    const response = await fetch(`${API}/api/auth/google`, {
+    const response = await apiRequest(`${API}/api/auth/google`, {
       method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ credential }),
     })
@@ -63,14 +78,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const data = await response.json() as { accessToken: string; user: User }
     accessToken.current = data.accessToken
     setUser(data.user)
-    const csrfResponse = await fetch(`${API}/api/auth/csrf`, { credentials: 'include' })
+    const csrfResponse = await apiRequest(`${API}/api/auth/csrf`, { credentials: 'include' })
     if (csrfResponse.ok) csrfToken.current = (await csrfResponse.json() as { csrfToken: string }).csrfToken
   }, [])
 
   const signOut = useCallback(async () => {
     try {
       const csrf = csrfToken.current ?? await getCsrf()
-      await fetch(`${API}/api/auth/logout`, { method: 'POST', credentials: 'include', headers: { 'X-CSRF-Token': csrf } })
+      await apiRequest(`${API}/api/auth/logout`, { method: 'POST', credentials: 'include', headers: { 'X-CSRF-Token': csrf } })
     } finally {
       accessToken.current = null
       setUser(null)
@@ -78,7 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [getCsrf])
 
   const apiFetch = useCallback(async <T,>(path: string, init: RequestInit = {}): Promise<T> => {
-    const call = (token: string | null) => fetch(`${API}/api/${path.replace(/^\//, '')}`, {
+    const call = (token: string | null) => apiRequest(`${API}/api/${path.replace(/^\//, '')}`, {
       ...init, credentials: 'include', headers: { ...Object.fromEntries(new Headers(init.headers).entries()), ...(token ? { Authorization: `Bearer ${token}` } : {}) },
     })
     let response = await call(accessToken.current)

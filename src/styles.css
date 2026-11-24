@@ -193,3 +193,43 @@ body{background:#f7faf5;color:#29463d}
 .login-footer{display:flex;justify-content:space-between;align-items:center;color:#98a399;font-size:9px;padding:0 4px}
 .login-footer button{border:0;background:transparent;color:#65836d;display:flex;align-items:center;gap:6px;font-size:9px}
 @media(max-width:700px){.login-page{padding:18px 14px max(14px,env(safe-area-inset-bottom))}.login-brand{font-size:16px}.login-card{grid-template-columns:1fr;min-height:0;margin:22px auto 16px}.login-art{min-height:190px}.login-sun{width:150px;height:150px;top:10px;left:9%}.login-pin{top:28px;right:19%;width:38px;height:38px}.login-car{top:88px;right:20%;width:67px;height:55px}.login-car svg{width:38px}.road-a{width:440px;height:190px;left:-85px;top:80px}.road-b{width:430px;height:125px;left:-78px;top:110px}.login-chip{left:8%;bottom:18px;font-size:9px;padding:7px 9px}.login-copy{padding:27px 22px 23px}.login-copy h1{font-size:28px;margin:11px 0 8px}.login-copy>p{font-size:11px;margin-bottom:19px}.google-login-button{justify-content:center}.privacy-note{margin-top:18px}.login-footer{font-size:8px}}
+
+/* Mapbox route planning, active deliveries and editable fare bands */
+.route-card{grid-template-columns:minmax(330px,.9fr) minmax(360px,1.1fr);align-items:stretch}
+.route-left{gap:13px;padding:17px}
+.stop-editor{display:grid;gap:8px}
+.stop-list{display:flex;flex-wrap:wrap;gap:6px}
+.stop-chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;background:#edf7ed;color:#52785b;padding:5px 8px;font-size:10px}
+.stop-chip button{border:0;background:transparent;color:#718c73;padding:0;display:grid;place-items:center}
+.stop-add{display:flex;gap:6px;align-items:center}
+.stop-add input,.route-fields input,.route-fields select{height:36px;border:1px solid #e3ece3;border-radius:7px;background:#fffefb;color:#38564a;padding:0 9px;font:inherit;font-size:11px;min-width:0;width:100%}
+.stop-add .icon-btn{flex:none}
+.route-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.route-fields label{display:grid;gap:5px;color:#71877a;font-size:9px;font-weight:700}
+.route-options{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.route-result{display:grid;gap:7px;border:1px solid #dfecdf;background:#f5faf3;padding:11px;border-radius:9px;color:#466e53;font-size:11px}
+.route-result span{font-size:9px;line-height:1.5;color:#79907c}
+.route-result .primary-btn{justify-content:center;min-height:36px}
+.mapbox-canvas,.map-token-missing{width:100%;height:100%;min-height:280px}
+.map-token-missing{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:radial-gradient(ellipse at 40% 45%,#e1f0e3,#eef4e9 60%,#f7f8ef);color:#527b5e;text-align:center;padding:18px}
+.map-token-missing span:not(.map-marker){max-width:220px;font-size:10px;line-height:1.5;color:#809282}
+.map-marker{display:grid;place-items:center;width:43px;height:43px;border-radius:15px;background:#fffefa;color:#4c8b62;font-size:28px;box-shadow:0 8px 24px #315c4517}
+.active-delivery{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:15px;border:1px solid #d8eadb;border-radius:11px;background:#f3faf0;padding:12px 15px}
+.active-delivery>div{display:flex;align-items:center;gap:10px}
+.active-delivery>div>div{display:grid;gap:4px}
+.active-delivery b{font-size:11px;color:#416e50}
+.active-delivery small{font-size:9px;color:#829384}
+.delivery-pulse{width:9px;height:9px;border-radius:50%;background:#63a879;box-shadow:0 0 0 4px #dceedd}
+.pricing-editor{display:grid;gap:9px;margin:17px 0;padding:13px;border:1px solid #e1ece0;border-radius:10px;background:#f8fbf5}
+.pricing-editor-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pricing-editor-head>div{display:grid;gap:4px}
+.pricing-editor-head b{font-size:11px;color:#416e50}
+.pricing-editor-head small,.pricing-hint{font-size:9px;color:#859587;line-height:1.45}
+.rate-row{display:grid;grid-template-columns:minmax(90px,1.2fr) minmax(64px,.8fr) minmax(64px,.8fr) minmax(70px,.9fr) 24px;gap:5px;align-items:center}
+.rate-row input{width:100%;min-width:0;height:32px;border:1px solid #e1eae0;border-radius:6px;background:#fffefa;color:#4d6755;padding:0 6px;font:inherit;font-size:9px}
+.rate-row .icon-btn{width:24px;height:27px;padding:0;color:#bc7760}
+.pricing-editor>.outline-btn{min-height:34px;justify-content:center}
+.map-panel{min-height:0}
+.mapboxgl-ctrl-attrib{font-size:9px}
+@media(max-width:900px){.route-card{grid-template-columns:minmax(0,1fr)}.route-left{padding:14px}.map-panel{min-height:260px}}
+@media(max-width:520px){.route-fields{grid-template-columns:1fr 1fr}.stop-add input{font-size:10px}.route-result .primary-btn{font-size:10px}.active-delivery{align-items:flex-start;flex-direction:column}.active-delivery .outline-btn{width:100%;justify-content:center}.rate-row{grid-template-columns:minmax(80px,1fr) 58px 58px 68px 22px;gap:4px}.route-options button{padding:9px 7px}.route-options button small{font-size:8px}}

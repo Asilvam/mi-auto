@@ -5,33 +5,48 @@ Primera interfaz web para registrar rutas y deliveries en Quintero, sumar kilóm
 ## Tecnologías
 
 - React + TypeScript + Vite
-- MongoDB planificado para persistencia (aún no conectado)
-- Google Sign-In y proveedor de mapas planificados para una siguiente etapa
+- Google Sign-In con sesión JWT y refresh token rotativo
+- Mapbox GL JS para mapa y API backend de geocodificación, rutas y reordenamiento de paradas
+- MongoDB/Mongoose en el backend para vehículos, rutas y tarifas asociadas a la cuenta
 
 ## Ejecutar
 
 ```bash
 npm install
+cp .env.example .env.local
 npm run dev
 ```
+
+Las pruebas unitarias del frontend se ejecutan con `npm test`.
 
 ## Inicio de sesión
 
 El acceso se realiza con Google. Copia `.env.example` a `.env.local` y configura `VITE_GOOGLE_CLIENT_ID` con el ID OAuth de tipo aplicación web. En Google Cloud, autoriza el origen de desarrollo `http://localhost:5173`. El backend debe tener el mismo ID en `GOOGLE_CLIENT_ID` y `FRONTEND_ORIGIN=http://localhost:5173`.
 
-El frontend conserva el JWT de acceso solo en memoria. La cookie de refresh es HttpOnly y la API la rota; vehículos e historial se cargan y guardan en el backend después de iniciar sesión.
+Configura `VITE_GOOGLE_CLIENT_ID`, `VITE_MAPBOX_PUBLIC_TOKEN` y `VITE_API_BASE_URL` en `.env.local`. El token de Mapbox para el backend se configura como `MAPBOX_ACCESS_TOKEN` en el `.env` del backend. En Google Cloud autoriza `http://localhost:5173`; en Mapbox usa un token público para el mapa y otro token de servidor para las llamadas desde NestJS.
 
-## Estado de esta versión
+El frontend conserva el JWT de acceso solo en memoria. La cookie de refresh es HttpOnly y la API la rota. Perfil, vehículo, rutas, paradas y tarifas de delivery se guardan en MongoDB bajo la cuenta autenticada.
 
-La interfaz permite navegar entre Resumen, Historial y Mi vehículo; configurar el rendimiento en km/L o en L/100 km (ambas cifras se convierten automáticamente) y el precio por litro; y guardar rutas y preferencias en el almacenamiento local del navegador. La información inicial del historial es demostrativa; los registros nuevos quedan en ese navegador. No hay autenticación ni persistencia en servidor todavía.
+## Funciones implementadas
 
-La comparación Económica/Más rápida y el mapa son una maqueta visual. Para comparar rutas reales, calcular kilómetros exactos y reordenar destinos, conectar un proveedor de mapas/rutas y decidir el cálculo tarifario. El formulario deja ingresar kilómetros recorridos manualmente; la lectura automática del odómetro o del GPS corresponde a una integración posterior y requiere permisos explícitos de ubicación.
+- Inicio de sesión Google, renovación y cierre de sesión.
+- Resumen e historial alimentados por la API, sin rutas demostrativas.
+- Configuración de vehículo en km/L, L/100 km y CLP por litro.
+- Comparación de alternativas por costo de combustible y por duración; peajes se ingresan manualmente.
+- Planificación de deliveries con varias paradas y reordenamiento de las paradas por tiempo.
+- Delivery activo con opción de añadir paradas, recalcular y finalizar.
+- Tarifas configurables por horario, con tramos iniciales gratuitos, $500 y $1.000 CLP.
+- División de combustible, peajes y otros gastos entre las personas indicadas.
 
-## Próximos pasos técnicos
+Mapbox Optimization entrega el orden de paradas más rápido; las alternativas de ruta se ordenan además por costo de combustible estimado. Mapbox no calcula aquí el monto del peaje automáticamente: se registra manualmente. El odómetro del vehículo no se lee automáticamente.
 
-1. Definir backend (por ejemplo, Node.js + TypeScript) y conectar MongoDB.
-2. Crear usuarios y autenticación con Google OAuth; asociar vehículos y rutas al usuario.
-3. Integrar mapas para búsqueda de direcciones y rutas en Quintero.
-4. Guardar datos por ruta: origen, destino, paradas, distancia real, duración, tipo, pasajeros, combustible, peajes y monto repartido.
+## Pruebas
+
+Los cálculos de combustible, reparto, tarifas y selección de rutas se prueban con Jest en el backend:
+
+```bash
+cd ../mi-auto-backend
+npm test -- --runInBand
+```
 
 El plan de implementación por etapas y los prompts listos para desarrollo están en [PLAN-DESARROLLO-PROMPTS.md](./PLAN-DESARROLLO-PROMPTS.md).
