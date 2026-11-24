@@ -311,3 +311,88 @@ body{background:#f7faf5;color:#29463d}
 .settings-drawer{display:flex;flex-direction:column;overflow:hidden;padding-bottom:20px}
 .settings-drawer-scroll{flex:1;min-height:0;overflow-y:auto;padding-bottom:8px;scrollbar-gutter:stable}
 .settings-drawer>.primary-btn.full{position:static;flex:none;width:100%;margin-top:12px}
+
+/* Route planner: distinct modes, a clear base loop, and controls that fit narrow workspaces. */
+.route-card{grid-template-columns:minmax(0,1fr) minmax(0,1.12fr);min-width:0;overflow:hidden;border-color:#e3ece2;border-radius:14px;background:#fffefa;box-shadow:0 9px 28px #31513c08}
+.route-left{display:flex;min-width:0;flex-direction:column;gap:13px;padding:19px}
+.route-mode-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.route-mode-cards>button{display:flex;min-width:0;min-height:64px;align-items:center;gap:10px;padding:10px;border:1px solid #e6ebe4;border-radius:10px;background:#fff;text-align:left;transition:border-color .15s,background .15s,box-shadow .15s}
+.route-mode-cards>button.active{border-color:#91c9ad;background:#f0faf4;box-shadow:0 0 0 2px #e4f4e9}
+.route-mode-icon{display:grid;width:34px;height:34px;flex:none;place-items:center;border-radius:10px;background:#e7f5ec;color:#448461}
+.route-mode-icon.delivery{background:#fff1df;color:#b58148}
+.route-mode-cards>button>span:last-child{display:grid;min-width:0;gap:4px}
+.route-mode-cards b{color:#355343;font-size:11px}
+.route-mode-cards small{color:#87968b;font-size:9px;line-height:1.35}
+.base-summary{display:flex;min-width:0;align-items:center;gap:10px;padding:11px 12px;border:1px solid #dcece0;border-radius:10px;background:linear-gradient(100deg,#f1faf3,#f8fbf4)}
+.base-pin{display:grid;width:32px;height:32px;flex:none;place-items:center;border-radius:9px;background:#e2f2e6;color:#4b8961}
+.base-summary>div{display:grid;min-width:0;gap:3px;flex:1}
+.base-summary small{color:#77917c;font-size:8px;font-weight:800;letter-spacing:.75px}
+.base-summary b{overflow:hidden;color:#48624d;font-size:10px;font-weight:600;text-overflow:ellipsis;white-space:nowrap}
+.base-summary>button{flex:none;border:0;background:transparent;color:#4e8b62;font-size:9px;font-weight:700}
+.route-destination,.delivery-stops{display:grid;gap:9px;min-width:0;padding:12px;border:1px solid #edf0e9;border-radius:10px;background:#fff}
+.route-destination>p{margin:0;color:#8a978d;font-size:9px;line-height:1.5}
+.delivery-stops-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.delivery-stops-heading>div{display:grid;gap:4px}
+.delivery-stops-heading b{color:#4a6450;font-size:10px}
+.delivery-stops-heading small{color:#8c9a8e;font-size:9px}
+.delivery-stops-heading>span{display:grid;width:25px;height:25px;place-items:center;border-radius:50%;background:#e8f5e9;color:#4c805b;font-size:10px;font-weight:700}
+.stop-list{display:grid;gap:6px;min-width:0}
+.stop-chip{display:flex;min-width:0;align-items:center;gap:8px;border:1px solid #e7efe5;border-radius:8px;background:#f8fbf6;padding:7px 8px;color:#526b56;font-size:9px;line-height:1.4}
+.stop-chip>i{display:grid;width:18px;height:18px;flex:none;place-items:center;border-radius:50%;background:#e5f2e6;color:#568361;font-size:8px;font-style:normal;font-weight:700}
+.stop-chip>button{margin-left:auto;flex:none}
+.stop-add{display:flex;align-items:flex-end;gap:8px;min-width:0}
+.stop-add>.place-field{flex:1}
+.stop-add .place-input-wrap input{height:36px;padding:0 28px 0 10px!important;border:1px solid #e3ece3;border-radius:7px;background:#fffefa;font-size:10px}
+.add-stop-btn{display:flex;height:36px;flex:none;align-items:center;justify-content:center;gap:5px;border:1px solid #bddbc3;border-radius:8px;background:#f0f8ee;color:#4b8058;padding:0 10px;font-size:9px;font-weight:700}
+.add-stop-btn:disabled{cursor:not-allowed;border-color:#ecefea;background:#f7f8f5;color:#a6afa6}
+.route-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+.route-fields label{min-width:0}
+.route-action{min-height:40px;border-color:#bcd8c0;background:#eff8ed;color:#467451;font-size:10px}
+.route-action:hover:not(:disabled){background:#e6f3e4}
+.map-panel{min-width:0;border-left:1px solid #edf0e9;border-radius:0 13px 13px 0;overflow:hidden}
+.base-address-field{margin-top:14px}
+.base-address-field>.place-field{margin-top:7px}
+.base-address-field .place-input-wrap input{height:38px!important;border:1px solid #e0e9df!important;border-radius:7px;background:#fff;padding:0 30px 0 10px!important;font-size:10px}
+.base-address-field>small{display:block;margin-top:5px;color:#89978b;font-size:9px;font-weight:400}
+.vehicle-tags span{display:inline-flex;align-items:center;gap:5px;max-width:100%;overflow-wrap:anywhere}
+.modal-route-kind{display:flex;align-items:center;gap:7px;margin-bottom:14px;padding:9px 10px;border:1px solid #dcebe0;border-radius:8px;background:#f1f8f0;color:#4f7b59;font-size:10px;font-weight:700}
+@media(max-width:1100px){.route-card{grid-template-columns:minmax(0,1fr)}.route-left{padding:16px}.map-panel{min-height:320px;border-top:1px solid #edf0e9;border-left:0;border-radius:0 0 13px 13px}.mapbox-canvas,.map-token-missing{min-height:280px}}
+@media(max-width:700px){.route-left{padding:12px;gap:10px}.route-mode-cards{gap:6px}.route-mode-cards>button{min-height:70px;align-items:flex-start;padding:9px 7px;gap:7px}.route-mode-icon{width:29px;height:29px}.route-mode-cards b{font-size:9px}.route-mode-cards small{font-size:8px}.base-summary{padding:9px}.route-destination,.delivery-stops{padding:10px}.stop-add{align-items:stretch;flex-direction:column}.add-stop-btn{width:100%}.route-fields{grid-template-columns:1fr 1fr}.map-panel{min-height:250px}.mapbox-canvas,.map-token-missing{min-height:215px}}
+.place-input-wrap input{width:100%;min-width:0;flex:1}
+.route-fields.route-fields-delivery{grid-template-columns:minmax(0,1fr)}
+
+/* Base and one-shot GPS location controls on the route map. */
+.map-container{position:relative;display:flex;min-width:0;min-height:280px;flex:1}
+.map-container .mapbox-canvas{width:100%;height:100%;min-height:280px}
+.map-base-marker{position:relative;display:flex;align-items:center;gap:5px;transform:translateY(-12px);filter:drop-shadow(0 3px 5px #20352d42)}
+.map-base-marker>span{display:grid;width:31px;height:31px;place-items:center;border:3px solid white;border-radius:50%;background:#38775e;color:white;font-size:19px}
+.map-base-marker>b{padding:5px 8px;border:1px solid #dce9dd;border-radius:999px;background:#fff;color:#416e51;font-size:9px;white-space:nowrap}
+.map-gps-marker{width:20px;height:20px;border:4px solid #fff;border-radius:50%;background:#3687e8;box-shadow:0 0 0 7px #3687e833,0 2px 8px #16294155}
+.map-location-button{position:absolute;z-index:3;top:86px;right:10px;display:flex;align-items:center;gap:6px;min-height:34px;padding:0 10px;border:1px solid #e4e9e4;border-radius:8px;background:#fff;color:#456c54;box-shadow:0 2px 8px #26352e24;font-size:9px;font-weight:700}
+.map-location-button:hover:not(:disabled){background:#f3faf3}
+.map-location-button:disabled{cursor:wait;opacity:.7}
+.map-location-message{position:absolute;z-index:3;right:10px;bottom:12px;max-width:calc(100% - 20px);padding:7px 9px;border:1px solid #e0e9df;border-radius:7px;background:#fffef2eF;color:#58725a;font-size:9px;box-shadow:0 2px 8px #26352e18}
+
+.base-map-open{display:inline-flex;align-items:center;gap:6px;margin-top:9px;padding:0;border:0;background:transparent;color:#4d8060;font-size:9px;font-weight:700}
+.base-map-open:hover{color:#315e43;text-decoration:underline;text-underline-offset:3px}
+.base-picker-backdrop{position:fixed;inset:0;z-index:11;display:grid;place-items:center;padding:20px;background:#20352d75;backdrop-filter:blur(3px)}
+.base-picker-dialog{display:grid;width:min(820px,100%);grid-template-rows:auto minmax(320px,58vh) auto;overflow:hidden;border:1px solid #e1e9df;border-radius:16px;background:#fffefa;box-shadow:0 24px 80px #16251d55}
+.base-picker-dialog>header,.base-picker-dialog>footer{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:14px 18px}
+.base-picker-dialog>header{border-bottom:1px solid #edf0ea}
+.base-picker-dialog>header>div{min-width:0}
+.base-picker-dialog>header small{color:#8a998d;font-size:8px;font-weight:800;letter-spacing:1px}
+.base-picker-dialog>header h2{margin:4px 0;color:#31483a;font-family:Manrope,sans-serif;font-size:18px}
+.base-picker-dialog>header p{overflow:hidden;margin:0;color:#78877b;font-size:10px;text-overflow:ellipsis;white-space:nowrap}
+.base-picker-dialog .map-container,.base-picker-dialog .mapbox-canvas{width:100%;height:100%;min-height:320px}
+.base-picker-dialog>footer{border-top:1px solid #edf0ea}
+.base-picker-dialog>footer>span{color:#829084;font-size:9px;line-height:1.5}
+.base-picker-dialog>footer .primary-btn{flex:none}
+.map-pick-instruction{position:absolute;z-index:3;top:12px;left:12px;max-width:calc(100% - 100px);padding:8px 10px;border:1px solid #e3eae1;border-radius:8px;background:#fffef2f0;color:#46664d;font-size:10px;box-shadow:0 2px 8px #26352e18}
+@media(max-width:600px){.base-picker-backdrop{padding:9px}.base-picker-dialog{grid-template-rows:auto minmax(300px,60vh) auto}.base-picker-dialog>header,.base-picker-dialog>footer{padding:11px;gap:8px}.base-picker-dialog>header h2{font-size:16px}.base-picker-dialog>footer{align-items:stretch;flex-direction:column}.base-picker-dialog>footer .primary-btn{width:100%}}
+
+/* Keep the add-stop action aligned with the input even when its selection note appears. */
+.stop-add{align-items:flex-start}
+.add-stop-btn{margin-top:14px}
+@media(max-width:700px){.stop-add{align-items:stretch;flex-direction:column}.add-stop-btn{margin-top:0}}
+.trip-km small{display:block;margin-top:3px;color:#8f9a91;font-size:8px;font-weight:500}
+.trip-modal{max-height:calc(100vh - 36px);overflow-y:auto}
