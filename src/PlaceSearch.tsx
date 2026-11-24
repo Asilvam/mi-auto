@@ -12,6 +12,7 @@ export type PlaceSuggestion = {
 type Props = {
   id: string
   label: string
+  scope: 'quintero' | 'valparaiso'
   value: string
   selectedPlace: PlaceSuggestion | null
   placeholder: string
@@ -19,7 +20,7 @@ type Props = {
   onSelect: (place: PlaceSuggestion | null) => void
 }
 
-export default function PlaceSearch({ id, label, value, selectedPlace, placeholder, onChange, onSelect }: Props) {
+export default function PlaceSearch({ id, label, scope, value, selectedPlace, placeholder, onChange, onSelect }: Props) {
   const { apiFetch } = useAuth()
   const [suggestions, setSuggestions] = useState<PlaceSuggestion[]>([])
   const [searching, setSearching] = useState(false)
@@ -39,7 +40,7 @@ export default function PlaceSearch({ id, label, value, selectedPlace, placehold
     const timer = window.setTimeout(() => {
       setSearching(true)
       setSearchError(false)
-      void apiFetch<PlaceSuggestion[]>(`routes/places?q=${encodeURIComponent(query)}`, { signal: controller.signal })
+      void apiFetch<PlaceSuggestion[]>(`routes/places?q=${encodeURIComponent(query)}&scope=${scope}`, { signal: controller.signal })
         .then((places) => { if (!controller.signal.aborted) setSuggestions(places) })
         .catch(() => { if (!controller.signal.aborted) { setSuggestions([]); setSearchError(true) } })
         .finally(() => { if (!controller.signal.aborted) setSearching(false) })
@@ -74,7 +75,7 @@ export default function PlaceSearch({ id, label, value, selectedPlace, placehold
       {searching ? <LoaderCircle className="place-search-icon spinning" size={14}/> : isSelected ? <MapPin className="place-search-icon selected" size={14}/> : <Search className="place-search-icon" size={14}/>}
     </div>
     {focused && value.trim().length >= 3 && !isSelected && <div id={`${id}-suggestions`} className="place-suggestions" role="listbox" aria-label={`Sugerencias para ${label.toLowerCase()}`}>
-      {searching && <div className="place-suggestion-message">Buscando lugares en Quintero…</div>}
+      {searching && <div className="place-suggestion-message">Buscando lugares en {scope === 'quintero' ? 'Quintero' : 'la Región de Valparaíso'}…</div>}
       {!searching && searchError && <div className="place-suggestion-message place-suggestion-error">No se pudieron buscar lugares. Revisa tu conexión.</div>}
       {!searching && !searchError && suggestions.length === 0 && <div className="place-suggestion-message">No encontramos lugares. Prueba otra dirección.</div>}
       {!searching && suggestions.map((place) => <button type="button" role="option" aria-selected="false" className="place-suggestion" key={place.id} onMouseDown={(event) => event.preventDefault()} onClick={() => choose(place)}>

@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { isWaitingForWorkspace, needsWorkspaceRetry } from './app-startup'
+import { API_REQUEST_TIMEOUT_MS, isWaitingForWorkspace, needsWorkspaceRetry, STARTUP_TIMEOUT_MS } from './app-startup'
 
 describe('workspace startup states', () => {
+  it('allows API requests to reach their timeout before showing the startup error', () => {
+    expect(STARTUP_TIMEOUT_MS).toBeGreaterThan(API_REQUEST_TIMEOUT_MS)
+  })
+
   it('waits while authentication or account data is loading before the limit', () => {
     expect(isWaitingForWorkspace(true, false, false, false)).toBe(true)
     expect(isWaitingForWorkspace(false, true, false, false)).toBe(true)

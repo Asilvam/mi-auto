@@ -11,6 +11,13 @@ describe('buildRouteRequest', () => {
     })
   })
 
+  it('sends the exact map-picked coordinates for a shared trip destination', () => {
+    expect(buildRouteRequest({
+      mode: 'Viaje compartido', baseAddress: 'Base Quintero', destination: 'Pasaje 2, Quintero',
+      destinationCoordinates: [-71.53, -32.8], stops: [], tollsClp: 0, participantCount: 2,
+    })).toMatchObject({ destination: 'Pasaje 2, Quintero', destinationCoordinates: [-71.53, -32.8] })
+  })
+
   it('sends delivery stops with the base as both route endpoints', () => {
     expect(buildRouteRequest({
       mode: 'Delivery', baseAddress: ' Base Quintero ', destination: 'Ignored',

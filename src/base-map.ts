@@ -9,3 +9,11 @@ export function mapStartView(baseCoordinates?: MapCoordinates | null) {
     ? { center: baseCoordinates, zoom: BASE_AREA_ZOOM }
     : { center: QUINTERO_CENTER, zoom: 12 }
 }
+
+export function basePickerMarkerCoordinates(isPickingBase: boolean, baseCoordinates: MapCoordinates | null) {
+  return isPickingBase ? baseCoordinates : null
+}
+
+export function canvasPointFromClick(clientX: number, clientY: number, canvasRect: { left: number; top: number }): [number, number] {
+  return [clientX - canvasRect.left, clientY - canvasRect.top]
+}

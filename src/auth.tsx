@@ -1,6 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
+import axios from 'axios'
+import { API_REQUEST_TIMEOUT_MS } from './app-startup'
+import { normalizeAuthUser, type AuthUserPayload } from './auth-user'
 
-type User = { id: string; email: string; name: string; pictureUrl: string }
+type User = ReturnType<typeof normalizeAuthUser>
 type AuthContextValue = {
   user: User | null
   loading: boolean
@@ -10,10 +13,14 @@ type AuthContextValue = {
 }
 
 const API = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000'
-const REQUEST_TIMEOUT_MS = 12_000
-const apiRequest = (url: string, init: RequestInit = {}) => fetch(url, {
-  ...init,
-  signal: init.signal ?? AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+const apiRequest = (url: string, init: RequestInit = {}) => axios.request({
+  url,
+  method: init.method ?? 'GET',
+  withCredentials: init.credentials === 'include',
+  headers: init.headers ? Object.fromEntries(new Headers(init.headers).entries()) : undefined,
+  data: init.body,
+  signal: init.signal ?? AbortSignal.timeout(API_REQUEST_TIMEOUT_MS),
+  validateStatus: () => true,
 })
 const AuthContext = createContext<AuthContextValue | null>(null)
 
@@ -26,8 +33,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const getCsrf = useCallback(async () => {
     const response = await apiRequest(`${API}/api/auth/csrf`, { credentials: 'include' })
-    if (!response.ok) throw new Error('No se pudo preparar la sesión segura.')
-    const data = await response.json() as { csrfToken: string }
+    if (response.status < 200 || response.status >= 300) throw new Error('No se pudo preparar la sesión segura.')
+    const data = response.data as { csrfToken: string }
     csrfToken.current = data.csrfToken
     return data.csrfToken
   }, [])
@@ -39,10 +46,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await apiRequest(`${API}/api/auth/refresh`, {
         method: 'POST', credentials: 'include', headers: { 'X-CSRF-Token': csrf },
       })
-      if (!response.ok) throw new Error('Sesión vencida.')
-      const data = await response.json() as { accessToken: string; user: User }
+      if (response.status < 200 || response.status >= 300) throw new Error('Sesión vencida.')
+      const data = response.data as { accessToken: string; user: AuthUserPayload }
       accessToken.current = data.accessToken
-      setUser(data.user)
+      setUser(normalizeAuthUser(data.user))
       return data.accessToken
     })()
     renewal.current = work
@@ -58,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null)
         setLoading(false)
       }
-    }, REQUEST_TIMEOUT_MS)
+    }, API_REQUEST_TIMEOUT_MS)
     void renew().catch(() => { if (active) { accessToken.current = null; setUser(null) } }).finally(() => {
       window.clearTimeout(timeout)
       if (active) setLoading(false)
@@ -71,15 +78,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ credential }),
     })
-    if (!response.ok) {
-      const body = await response.json().catch(() => ({})) as { message?: string }
+    if (response.status < 200 || response.status >= 300) {
+      const body = response.data as { message?: string }
       throw new Error(body.message ?? 'No se pudo iniciar sesión con Google.')
     }
-    const data = await response.json() as { accessToken: string; user: User }
+    const data = response.data as { accessToken: string; user: AuthUserPayload }
     accessToken.current = data.accessToken
-    setUser(data.user)
+    setUser(normalizeAuthUser(data.user))
     const csrfResponse = await apiRequest(`${API}/api/auth/csrf`, { credentials: 'include' })
-    if (csrfResponse.ok) csrfToken.current = (await csrfResponse.json() as { csrfToken: string }).csrfToken
+    if (csrfResponse.status >= 200 && csrfResponse.status < 300) csrfToken.current = (csrfResponse.data as { csrfToken: string }).csrfToken
   }, [])
 
   const signOut = useCallback(async () => {
@@ -100,11 +107,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (response.status === 401) {
       try { response = await call(await renew()) } catch { accessToken.current = null; setUser(null); throw new Error('Tu sesión venció. Inicia sesión nuevamente.') }
     }
-    if (!response.ok) {
-      const body = await response.json().catch(() => ({})) as { message?: string }
+    if (response.status < 200 || response.status >= 300) {
+      const body = response.data as { message?: string }
       throw new Error(body.message ?? 'Ocurrió un error al guardar los datos.')
     }
-    return await response.json() as T
+    return response.data as T
   }, [renew])
 
   return <AuthContext.Provider value={{ user, loading, signInWithGoogle, signOut, apiFetch }}>{children}</AuthContext.Provider>

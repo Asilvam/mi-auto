@@ -11,9 +11,10 @@ type RouteRequestInput = {
   stops: string[]
   tollsClp: number
   participantCount: number
+  destinationCoordinates?: [number, number] | null
 }
 
-export function buildRouteRequest({ mode, baseAddress, destination, stops, tollsClp, participantCount }: RouteRequestInput) {
+export function buildRouteRequest({ mode, baseAddress, destination, stops, tollsClp, participantCount, destinationCoordinates }: RouteRequestInput) {
   const isDelivery = mode === 'Delivery'
   const base = baseAddress.trim()
   return {
@@ -23,5 +24,6 @@ export function buildRouteRequest({ mode, baseAddress, destination, stops, tolls
     type: isDelivery ? 'delivery' as const : 'shared' as const,
     tollsClp,
     participantCount,
+    ...(!isDelivery && destinationCoordinates ? { destinationCoordinates } : {}),
   }
 }
